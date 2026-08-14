@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee ID Card</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="config.js"></script>
+<style>
+  :root{
+    --navy:#0f2846;
+    --gold:#c8a13a;
+    --paper:#f4f6f9;
+    --muted:#6b7684;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:linear-gradient(180deg,#0f2846 0%,#0f2846 220px,var(--paper) 220px);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .state{
+    color:#fff;
+    text-align:center;
+    margin-top:120px;
+    font-size:1.1rem;
+  }
+  .card{
+    width:100%;
+    max-width:440px;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.25);
+    overflow:hidden;
+    margin-top:24px;
+  }
+  .card-header{
+    background:var(--navy);
+    color:#fff;
+    padding:18px 24px;
+    text-align:center;
+  }
+  .card-header .company{
+    font-size:0.8rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    opacity:0.75;
+  }
+  .card-header .title{
+    font-size:1.15rem;
+    font-weight:700;
+    margin-top:2px;
+  }
+  .photo-wrap{
+    display:flex;
+    justify-content:center;
+    margin-top:-46px;
+  }
+  .photo-wrap img, .photo-wrap .placeholder{
+    width:112px;
+    height:112px;
+    border-radius:50%;
+    object-fit:cover;
+    border:5px solid #fff;
+    background:#dde3ea;
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  }
+  .photo-wrap .placeholder{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+    font-size:2rem;
+    font-weight:600;
+  }
+  .name{
+    text-align:center;
+    font-size:1.35rem;
+    font-weight:700;
+    color:var(--navy);
+    margin:10px 0 2px;
+  }
+  .designation{
+    text-align:center;
+    color:var(--gold);
+    font-weight:600;
+    font-size:0.95rem;
+    margin-bottom:4px;
+  }
+  .empcode{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.85rem;
+    margin-bottom:18px;
+  }
+  .details{
+    padding:0 26px 26px;
+  }
+  .row{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:11px 0;
+    border-bottom:1px solid #eef0f3;
+    font-size:0.92rem;
+  }
+  .row:last-child{border-bottom:none;}
+  .label{
+    color:var(--muted);
+  }
+  .value{
+    font-weight:600;
+    color:#1c2733;
+    text-align:right;
+  }
+  .footer{
+    text-align:center;
+    padding:14px;
+    font-size:0.72rem;
+    color:var(--muted);
+    background:var(--paper);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="state" id="loading">Loading employee record…</div>
+</div>
+
+<script>
+async function main(){
+  const app = document.getElementById('app');
+  const params = new URLSearchParams(window.location.search);
+  const empCode = (params.get('id') || '').trim();
+
+  if (!empCode){
+    app.innerHTML = '<div class="state">No employee ID provided in the link.</div>';
+    return;
+  }
+
+  let csvText;
+  try{
+    const res = await fetch(CONFIG.SHEET_CSV_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Sheet fetch failed: ' + res.status);
+    csvText = await res.text();
+  }catch(err){
+    app.innerHTML = '<div class="state">Could not load employee data.<br>Check that the sheet is published and the link in config.js is correct.</div>';
+    return;
+  }
+
+  const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+  const cols = CONFIG.COLUMNS;
+  const row = parsed.data.find(r => (r[cols.empCode] || '').trim().toUpperCase() === empCode.toUpperCase());
+
+  if (!row){
+    app.innerHTML = '<div class="state">No employee found for ID "' + empCode + '".</div>';
+    return;
+  }
+
+  const photoUrl = driveLinkToImageUrl(row[cols.photo]);
+  const initials = (row[cols.name] || '?').trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
+
+  const photoHtml = photoUrl
+    ? `<img src="${photoUrl}" alt="Photo" onerror="this.parentNode.innerHTML='<div class=\\'placeholder\\'>${initials}</div>'">`
+    : `<div class="placeholder">${initials}</div>`;
+
+  const fmtRow = (label, value) => value ? `
+    <div class="row">
+      <div class="label">${label}</div>
+      <div class="value">${value}</div>
+    </div>` : '';
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="company">Employee Identification</div>
+        <div class="title">ID Card Verification</div>
+      </div>
+      <div class="photo-wrap">${photoHtml}</div>
+      <div class="name">${row[cols.name] || ''}</div>
+      <div class="designation">${row[cols.designation] || ''}</div>
+      <div class="empcode">Emp Code: ${row[cols.empCode] || ''}</div>
+      <div class="details">
+        ${fmtRow('Department', row[cols.department])}
+        ${fmtRow('Date of Birth', row[cols.dob])}
+        ${fmtRow('Date of Joining', row[cols.doj])}
+        ${fmtRow('Blood Group', row[cols.bloodGroup])}
+        ${fmtRow('Contact Number', row[cols.contact])}
+        ${fmtRow('Emergency Contact', row[cols.emergencyContact])}
+      </div>
+      <div class="footer">Details are pulled live from the company records.</div>
+    </div>
+  `;
+}
+main();
+</script>
+</body>
+</html>

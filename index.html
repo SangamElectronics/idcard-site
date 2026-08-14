@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee QR Code Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="config.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:#f4f6f9;
+    color:#1c2733;
+  }
+  header{
+    background:#0f2846;
+    color:#fff;
+    padding:22px 24px;
+  }
+  header h1{margin:0 0 4px;font-size:1.3rem;}
+  header p{margin:0;opacity:0.8;font-size:0.9rem;}
+  .toolbar{
+    padding:16px 24px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    background:#fff;
+    border-bottom:1px solid #e5e8ec;
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  .toolbar input{
+    padding:8px 12px;
+    border:1px solid #ccd2d9;
+    border-radius:8px;
+    font-size:0.9rem;
+    min-width:220px;
+  }
+  .toolbar button{
+    padding:9px 16px;
+    border:none;
+    border-radius:8px;
+    background:#0f2846;
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+    font-size:0.9rem;
+  }
+  .toolbar button:hover{background:#173a63;}
+  .count{font-size:0.85rem;color:#6b7684;}
+  #grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+    gap:16px;
+    padding:24px;
+  }
+  .qcard{
+    background:#fff;
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  }
+  .qcard .qr{display:flex;justify-content:center;margin-bottom:8px;}
+  .qcard .name{font-weight:700;font-size:0.88rem;}
+  .qcard .code{font-size:0.78rem;color:#6b7684;margin-bottom:2px;}
+  .state{padding:40px;text-align:center;color:#6b7684;}
+  @media print{
+    header,.toolbar{display:none;}
+    #grid{padding:0;}
+    .qcard{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Employee QR Code Generator</h1>
+  <p>Pulls live from the company sheet — add or edit an employee there and refresh this page.</p>
+</header>
+
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Search name or emp code…">
+  <button onclick="window.print()">Print all</button>
+  <span class="count" id="count"></span>
+</div>
+
+<div id="grid"><div class="state">Loading employees…</div></div>
+
+<script>
+let allRows = [];
+const cols = CONFIG.COLUMNS;
+
+// The base URL this site is hosted at, e.g. https://yourname.github.io/idcard-site/
+// Auto-detected from the current page location, so it works as soon as you
+// deploy to GitHub Pages — no manual editing needed.
+const BASE_URL = window.location.href.replace(/index\.html.*$/, '').replace(/\/$/, '') + '/';
+
+async function load(){
+  const grid = document.getElementById('grid');
+  let csvText;
+  try{
+    const res = await fetch(CONFIG.SHEET_CSV_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('bad status');
+    csvText = await res.text();
+  }catch(e){
+    grid.innerHTML = '<div class="state">Could not load the sheet. Check CONFIG.SHEET_CSV_URL in config.js.</div>';
+    return;
+  }
+  const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+  allRows = parsed.data.filter(r => (r[cols.empCode] || '').trim());
+  render(allRows);
+}
+
+function render(rows){
+  const grid = document.getElementById('grid');
+  document.getElementById('count').textContent = rows.length + ' employees';
+  if (!rows.length){
+    grid.innerHTML = '<div class="state">No employees found.</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  rows.forEach(r => {
+    const empCode = r[cols.empCode].trim();
+    const name = r[cols.name] || '';
+    const url = BASE_URL + 'employee.html?id=' + encodeURIComponent(empCode);
+
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.innerHTML = `
+      <div class="qr" id="qr-${empCode}"></div>
+      <div class="name">${name}</div>
+      <div class="code">${empCode}</div>
+    `;
+    grid.appendChild(card);
+
+    new QRCode(document.getElementById('qr-' + empCode), {
+      text: url,
+      width: 140,
+      height: 140,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  if (!q){ render(allRows); return; }
+  render(allRows.filter(r =>
+    (r[cols.name] || '').toLowerCase().includes(q) ||
+    (r[cols.empCode] || '').toLowerCase().includes(q)
+  ));
+});
+
+load();
+</script>
+</body>
+</html>
