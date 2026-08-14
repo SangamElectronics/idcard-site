@@ -8,6 +8,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="config.js"></script>
 <style>
+  :root{
+    --navy:#1c2733;
+    --red:#d81f2a;
+    --red-dark:#a8161f;
+    --logo-bg:#f6f6f6;
+  }
   *{box-sizing:border-box;}
   body{
     margin:0;
@@ -15,10 +21,30 @@
     background:#f4f6f9;
     color:#1c2733;
   }
+  .logo-bar{
+    background:var(--logo-bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    padding:12px 20px;
+    border-bottom:1px solid #e5e5e5;
+  }
+  .logo-bar img{
+    height:36px;
+    width:auto;
+    object-fit:contain;
+  }
+  .logo-bar .divider{
+    width:1px;
+    height:28px;
+    background:#d5d5d5;
+  }
   header{
-    background:#0f2846;
+    background:linear-gradient(120deg,var(--navy) 0%,#101820 100%);
     color:#fff;
-    padding:22px 24px;
+    padding:20px 24px;
+    border-top:4px solid var(--red);
   }
   header h1{margin:0 0 4px;font-size:1.3rem;}
   header p{margin:0;opacity:0.8;font-size:0.9rem;}
@@ -45,13 +71,13 @@
     padding:9px 16px;
     border:none;
     border-radius:8px;
-    background:#0f2846;
+    background:linear-gradient(120deg,var(--red) 0%,var(--red-dark) 100%);
     color:#fff;
     font-weight:600;
     cursor:pointer;
     font-size:0.9rem;
   }
-  .toolbar button:hover{background:#173a63;}
+  .toolbar button:hover{opacity:0.9;}
   .count{font-size:0.85rem;color:#6b7684;}
   #grid{
     display:grid;
@@ -71,13 +97,19 @@
   .qcard .code{font-size:0.78rem;color:#6b7684;margin-bottom:2px;}
   .state{padding:40px;text-align:center;color:#6b7684;}
   @media print{
-    header,.toolbar{display:none;}
+    .logo-bar,header,.toolbar{display:none;}
     #grid{padding:0;}
     .qcard{break-inside:avoid;}
   }
 </style>
 </head>
 <body>
+
+<div class="logo-bar">
+  <img src="logo-sangam.jpeg" alt="Sangam Electronics Co.">
+  <div class="divider"></div>
+  <img src="logo-sunpower.jpeg" alt="Sun Power">
+</div>
 
 <header>
   <h1>Employee QR Code Generator</h1>
