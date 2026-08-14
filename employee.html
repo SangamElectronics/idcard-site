@@ -8,25 +8,50 @@
 <script src="config.js"></script>
 <style>
   :root{
-    --navy:#0f2846;
-    --gold:#c8a13a;
+    --navy:#1c2733;
+    --red:#d81f2a;
+    --red-dark:#a8161f;
     --paper:#f4f6f9;
+    --logo-bg:#f6f6f6;
     --muted:#6b7684;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
     font-family:'Segoe UI',Arial,sans-serif;
-    background:linear-gradient(180deg,#0f2846 0%,#0f2846 220px,var(--paper) 220px);
+    background:linear-gradient(180deg,var(--navy) 0%,var(--navy) 250px,var(--paper) 250px);
     min-height:100vh;
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:0 16px 32px;
+  }
+  .logo-bar{
+    width:100%;
+    max-width:440px;
+    background:var(--logo-bg);
+    border-radius:0 0 14px 14px;
+    display:flex;
+    align-items:center;
     justify-content:center;
-    padding:32px 16px;
+    gap:18px;
+    padding:14px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15);
+  }
+  .logo-bar img{
+    height:38px;
+    width:auto;
+    object-fit:contain;
+  }
+  .logo-bar .divider{
+    width:1px;
+    height:30px;
+    background:#d5d5d5;
   }
   .state{
     color:#fff;
     text-align:center;
-    margin-top:120px;
+    margin-top:90px;
     font-size:1.1rem;
   }
   .card{
@@ -36,10 +61,10 @@
     border-radius:16px;
     box-shadow:0 20px 50px rgba(0,0,0,0.25);
     overflow:hidden;
-    margin-top:24px;
+    margin-top:20px;
   }
   .card-header{
-    background:var(--navy);
+    background:linear-gradient(120deg,var(--red) 0%,var(--red-dark) 100%);
     color:#fff;
     padding:18px 24px;
     text-align:center;
@@ -48,7 +73,7 @@
     font-size:0.8rem;
     letter-spacing:2px;
     text-transform:uppercase;
-    opacity:0.75;
+    opacity:0.85;
   }
   .card-header .title{
     font-size:1.15rem;
@@ -86,7 +111,7 @@
   }
   .designation{
     text-align:center;
-    color:var(--gold);
+    color:var(--red);
     font-weight:600;
     font-size:0.95rem;
     margin-bottom:4px;
@@ -127,6 +152,12 @@
 </style>
 </head>
 <body>
+
+<div class="logo-bar">
+  <img src="logo-sangam.jpeg" alt="Sangam Electronics Co.">
+  <div class="divider"></div>
+  <img src="logo-sunpower.jpeg" alt="Sun Power">
+</div>
 
 <div id="app">
   <div class="state" id="loading">Loading employee record…</div>
