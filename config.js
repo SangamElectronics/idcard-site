@@ -16,7 +16,7 @@
 
 const CONFIG = {
   // Paste your "Publish to web" CSV link here:
-  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSitL2dZtMWea2Qs5HMHQD6mpk1nhcX36su9E3t6oqf_1_6E0nCBsBVBFmlA6kvgQ/pubhtml",
+  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSitL2dZtMWea2Qs5HMHQD6mpk1nhcX36su9E3t6oqf_1_6E0nCBsBVBFmlA6kvgQ/pub?output=csv",
 
   // The exact column header names in your sheet (edit only if you
   // rename columns in the sheet later).
